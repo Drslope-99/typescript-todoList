@@ -1,5 +1,10 @@
 import { TodoItem } from "./todoItem";
 
+type ItemCount = {
+  total: number;
+  incomplete: number;
+};
+
 export class TodoCollection {
   private nextId: number = 1;
   private itemMap = new Map<number, TodoItem>();
@@ -8,7 +13,7 @@ export class TodoCollection {
     public userName: string,
     public todoItems: TodoItem[] = [],
   ) {
-    todoItems.forEach((item) => this.itemMap.set(this.nextId, item));
+    todoItems.forEach((item) => this.itemMap.set(item.id, item));
   }
   addTodo(task: string): number {
     while (this.getTodoById(this.nextId)) {
@@ -34,5 +39,20 @@ export class TodoCollection {
     if (todoItem) {
       todoItem.complete = complete;
     }
+  }
+
+  removeComplete() {
+    this.itemMap.forEach((item) => {
+      if (item.complete) {
+        this.itemMap.delete(item.id);
+      }
+    });
+  }
+
+  getItemCounts(): ItemCount {
+    return {
+      total: this.itemMap.size,
+      incomplete: this.getTodoItems(false).length,
+    };
   }
 }

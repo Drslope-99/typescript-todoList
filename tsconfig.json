@@ -3,6 +3,6 @@
     "target": "es2018",
     "outDir": "./dist",
     "rootDir": "./src",
-    "module": "commonjs"
+    "module": "nodenext"
   }
 }
