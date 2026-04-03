@@ -1,6 +1,6 @@
 import { TodoItem } from "./todoItem";
 import { TodoCollection } from "./todoCollection";
-import { select, Separator } from "@inquirer/prompts";
+import { select, input, checkbox } from "@inquirer/prompts";
 
 let todos: TodoItem[] = [
   new TodoItem(1, "Buy Flowers"),
@@ -22,41 +22,52 @@ function displayTodoList(): void {
 displayTodoList();
 
 enum Commands {
+  Add = "Add new task",
+  Complete = "Complete Task",
   Toggle = "Show/Hide Completed",
   Quit = "Quit",
+}
+
+async function promptAdd(): Promise<void> {
+  console.clear();
+  const task = await input({ message: "Enter a new task to add" });
+  if (task) {
+    collection.addTodo(task);
+  }
+  promptUser();
+}
+
+async function promptComplete(): Promise<void> {
+  const answer = await checkbox({
+    message: "Mark as Complete",
+    choices: collection.getTodoItems(showCompleted).map((item) => ({
+      name: item.task,
+      value: item.id,
+      checked: item.complete,
+    })),
+  });
+  console.log(answer);
 }
 
 async function promptUser(): Promise<void> {
   console.clear();
   displayTodoList();
   const answer = await select({
-    message: "Select a package manager",
-    choices: [
-      {
-        name: "npm",
-        value: "npm",
-        description: "npm is the most popular package manager",
-      },
-      {
-        name: "yarn",
-        value: "yarn",
-        description: "yarn is an awesome package manager",
-        disabled: true,
-      },
-      new Separator(),
-      {
-        name: "jspm",
-        value: "jspm",
-        disabled: true,
-      },
-      {
-        name: "pnpm",
-        value: "pnpm",
-        disabled: "(pnpm is not available)",
-      },
-    ],
+    message: "Choose an option",
+    choices: Object.values(Commands),
   });
-  console.log(`your selected ${answer}`);
+  switch (answer) {
+    case Commands.Toggle:
+      showCompleted = !showCompleted;
+      promptUser();
+      break;
+    case Commands.Add:
+      await promptAdd();
+      break;
+    case Commands.Complete:
+      await promptComplete();
+      break;
+  }
 }
 
 promptUser();
