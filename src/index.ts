@@ -25,11 +25,11 @@ enum Commands {
   Add = "Add new task",
   Complete = "Complete Task",
   Toggle = "Show/Hide Completed",
+  Purge = "Remove Completed Tasks",
   Quit = "Quit",
 }
 
 async function promptAdd(): Promise<void> {
-  console.clear();
   const task = await input({ message: "Enter a new task to add" });
   if (task) {
     collection.addTodo(task);
@@ -47,6 +47,9 @@ async function promptComplete(): Promise<void> {
     })),
   });
   console.log(answer);
+  let completedTasks: number[] = answer;
+  completedTasks.forEach((id) => collection.markComplete(id, true));
+  promptUser();
 }
 
 async function promptUser(): Promise<void> {
@@ -65,7 +68,15 @@ async function promptUser(): Promise<void> {
       await promptAdd();
       break;
     case Commands.Complete:
-      await promptComplete();
+      if (collection.getItemCounts().incomplete > 0) {
+        await promptComplete();
+      } else {
+        promptUser();
+      }
+      break;
+    case Commands.Purge:
+      collection.removeComplete();
+      promptUser();
       break;
   }
 }
